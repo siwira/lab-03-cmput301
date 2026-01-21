@@ -6,20 +6,30 @@ import android.widget.ListView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements AddCityFragment.AddCityDialogListener, EditCityFragment.EditCityDialogListener {
 
     private ArrayList<City> dataList;
     private ListView cityList;
-    private ArrayAdapter<City> cityAdapter;
-
+    private CityArrayAdapter cityAdapter;
+    private int idxToSelect;
+    public void addCity(City city) {
+        cityAdapter.add(city);
+        cityAdapter.notifyDataSetChanged();
+    }
+    public void editCity(City city, String newCityName, String newProvince) { // forgot to implement this so changes weren't shown
+        city.setName(newCityName);
+        city.setProvince(newProvince);
+        cityAdapter.notifyDataSetChanged();
+    }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
         String[] cities = { "Edmonton", "Vancouver", "Toronto" };
         String[] provinces = { "AB", "BC", "ON" };
 
@@ -29,7 +39,17 @@ public class MainActivity extends AppCompatActivity {
         }
 
         cityList = findViewById(R.id.city_list);
-        cityAdapter = new ArrayAdapter<>(this, R.layout.content, dataList);
+        cityAdapter = new CityArrayAdapter(this, dataList);
         cityList.setAdapter(cityAdapter);
+
+        FloatingActionButton fab = findViewById(R.id.button_add_city);
+        fab.setOnClickListener(v -> {
+            new AddCityFragment().show(getSupportFragmentManager(), "Add City");
+        });
+        cityList.setOnItemClickListener((parent, view, position, id) -> {
+            idxToSelect = position;
+            EditCityFragment fragment = EditCityFragment.newInstance(dataList.get(position));
+            fragment.show(getSupportFragmentManager(), "Edit City");
+        });
     }
 }
